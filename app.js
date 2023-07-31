@@ -6,6 +6,8 @@ const applicationUpload = require("./utils/application");
 
 const app = express();
 
+const authMiddleware = require("./middlewares/auth")
+
 const blogPostRoute = require("./routes/blog.post");
 const applicationRoute = require("./routes/application");
 const partnerRoute = require("./routes/home/partner");
@@ -15,6 +17,8 @@ const aboutBannerRoute = require("./routes/about/banner");
 const aboutValuesRoute = require("./routes/about/value");
 const visionMissionRoute = require("./routes/about/vision-mission");
 const homeWhyRoute = require("./routes/home/why")
+const registerRoute = require("./routes/auth/register")
+const loginRoute = require("./routes/auth/login")
 
 // Middlewares
 app.use(cors());
@@ -35,6 +39,8 @@ app.use("/api/v1/home", servicesRoute);
 app.use("/api/v1/about", upload.single("banner"), aboutBannerRoute);
 app.use("/api/v1/about", aboutValuesRoute);
 app.use("/api/v1/about", visionMissionRoute);
-app.use("/api/v1/home", homeWhyRoute)
+app.use("/api/v1/home", homeWhyRoute);
+app.use("/api/v1/auth", registerRoute)
+app.use("/api/v1/auth", loginRoute)
 
 module.exports = app;
