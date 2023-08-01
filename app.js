@@ -6,7 +6,7 @@ const applicationUpload = require("./utils/application");
 
 const app = express();
 
-const authMiddleware = require("./middlewares/auth")
+const authMiddleware = require("./middlewares/auth");
 
 const blogPostRoute = require("./routes/blog.post");
 const applicationRoute = require("./routes/application");
@@ -16,9 +16,10 @@ const servicesRoute = require("./routes/home/services");
 const aboutBannerRoute = require("./routes/about/banner");
 const aboutValuesRoute = require("./routes/about/value");
 const visionMissionRoute = require("./routes/about/vision-mission");
-const homeWhyRoute = require("./routes/home/why")
-const registerRoute = require("./routes/auth/register")
-const loginRoute = require("./routes/auth/login")
+const homeWhyRoute = require("./routes/home/why");
+const registerRoute = require("./routes/auth/register");
+const loginRoute = require("./routes/auth/login");
+const caseStudies = require("./routes/case-studies/index");
 
 // Middlewares
 app.use(cors());
@@ -40,7 +41,8 @@ app.use("/api/v1/about", upload.single("banner"), aboutBannerRoute);
 app.use("/api/v1/about", aboutValuesRoute);
 app.use("/api/v1/about", visionMissionRoute);
 app.use("/api/v1/home", homeWhyRoute);
-app.use("/api/v1/auth", registerRoute)
-app.use("/api/v1/auth", loginRoute)
+app.use("/api/v1/auth", registerRoute);
+app.use("/api/v1/auth", loginRoute);
+app.use("/api/v1/case-studies", upload.single("imageUrl"), caseStudies);
 
 module.exports = app;
