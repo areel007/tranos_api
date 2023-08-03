@@ -3,6 +3,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const upload = require("./utils/multer");
 const applicationUpload = require("./utils/application");
+const videoUpload = require("./utils/multer-video");
 
 const app = express();
 
@@ -20,6 +21,10 @@ const homeWhyRoute = require("./routes/home/why");
 const registerRoute = require("./routes/auth/register");
 const loginRoute = require("./routes/auth/login");
 const caseStudies = require("./routes/case-studies/index");
+const videoRoute = require("./routes/home/why-video");
+const fabricationRoute = require("./routes/services/fabrication");
+const installationRoute = require("./routes/services/installation");
+const maintenanceRoute = require("./routes/services/maintenance");
 
 // Middlewares
 app.use(cors());
@@ -44,5 +49,21 @@ app.use("/api/v1/home", homeWhyRoute);
 app.use("/api/v1/auth", registerRoute);
 app.use("/api/v1/auth", loginRoute);
 app.use("/api/v1/case-studies", upload.single("imageUrl"), caseStudies);
+app.use("/api/v1/home-video", videoUpload.single("videoUrl"), videoRoute);
+app.use(
+  "/api/v1/services/fabrication",
+  upload.single("imageUrl"),
+  fabricationRoute
+);
+app.use(
+  "/api/v1/services/installation",
+  upload.single("imageUrl"),
+  installationRoute
+);
+app.use(
+  "/api/v1/services/maintenance",
+  upload.single("imageUrl"),
+  maintenanceRoute
+);
 
 module.exports = app;
