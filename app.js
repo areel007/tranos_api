@@ -25,6 +25,9 @@ const videoRoute = require("./routes/home/why-video");
 const fabricationRoute = require("./routes/services/fabrication");
 const installationRoute = require("./routes/services/installation");
 const maintenanceRoute = require("./routes/services/maintenance");
+const heroImageOne = require("./routes/home/hero-images/hero-images-one");
+const heroImageTwo = require("./routes/home/hero-images/hero-image-two");
+const heroImageThree = require("./routes/home/hero-images/hero-image-three");
 
 // Middlewares
 app.use(cors());
@@ -65,5 +68,8 @@ app.use(
   upload.single("imageUrl"),
   maintenanceRoute
 );
+app.use("/api/v1/hero-image-one", upload.single("imageUrl"), heroImageOne);
+app.use("/api/v1/hero-image-two", upload.single("imageUrl"), heroImageTwo);
+app.use("/api/v1/hero-image-three", upload.single("imageUrl"), heroImageThree);
 
 module.exports = app;
