@@ -2,28 +2,33 @@ const HeroImage = require("../../../models/home/hero-images/hero-image-one");
 const cloudinary = require("../../../utils/cloudinary");
 
 exports.postHeroImage = async (req, res) => {
+  let path = "";
   try {
-    const options = {
-      folder: "tranos/home",
-      resource_type: "auto",
-    };
+    if (req.files) {
+      const files = Array.isArray(req.files) ? req.files : [req.files];
+      files.forEach((file) => {
+        if (Array.isArray(file)) {
+          file.forEach((singleFile) => {
+            path = path + singleFile.path + ",";
+          });
+        } else {
+          path = path + file.path + ",";
+        }
+      });
+      path = path.substring(0, path.lastIndexOf(","));
+    }
 
-    const result = await cloudinary.uploader.upload(req.file.path, options);
+    const heroImageUrl = path;
 
-    const newHeroImage = new HeroImage({
-      heroImageUrl: result.secure_url,
-      cloudinaryId: result.public_id,
+    const news = new HeroImage({
+      heroImageUrl,
     });
 
-    await newHeroImage.save();
-
-    res.status(201).json({
-      newHeroImage,
-    });
+    await news.save();
+    res.status(201).json({ message: "Hero image successfully added" });
   } catch (error) {
-    res.status(500).json({
-      error,
-    });
+    console.error("Error adding news and events:", error);
+    res.status(500).json({ message: "Error adding news and events" });
   }
 };
 
