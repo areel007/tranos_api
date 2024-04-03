@@ -1,18 +1,11 @@
 const Banner = require("../../models/about/banner");
-const cloudinary = require("../../utils/cloudinary");
+// const cloudinary = require("../../utils/cloudinary");
+const fs = require("fs");
 
 exports.addBanner = async (req, res) => {
   try {
-    const options = {
-      folder: "tranos/about",
-      resource_type: "auto",
-    };
-
-    const result = await cloudinary.uploader.upload(req.file.path, options);
-
     const newBanner = new Banner({
-      banner: result.secure_url,
-      cloudinaryId: result.public_id,
+      banner: req.file.path,
     });
 
     await newBanner.save();
@@ -40,8 +33,8 @@ exports.getBanner = async (req, res) => {
     }
 
     res.status(200).json({
-      banner
-    })
+      banner,
+    });
   } catch (error) {
     res.status(500).json({
       error,
@@ -50,40 +43,42 @@ exports.getBanner = async (req, res) => {
 };
 
 exports.updateBanner = async (req, res) => {
+  const bannerId = req.params.id;
+
   try {
-    const bannerId = req.params.id;
     const banner = await Banner.findById(bannerId);
 
     if (!banner) {
-      return res.status(404).json({
-        msg: "resource not found",
-      });
+      return res.status(404).json({ message: "Banner not found" });
     }
 
-    // Delete the old image from Cloudinary
-    await cloudinary.uploader.destroy(banner.cloudinaryId);
+    // Delete the old banner file from the file system
+    try {
+      for (const bannerUrl of banner.banner.split(",")) {
+        await fs.promises.unlink(bannerUrl);
+      }
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        // Ignore file not found error
+        console.error("Error deleting file:", err);
+        return res.status(500).json({ message: "Error deleting file" });
+      }
+    }
 
-    // Upload the updated banner image to Cloudinary
-    const options = {
-      folder: "tranos/about",
-      resource_type: "auto",
-    };
-    const result = await cloudinary.uploader.upload(req.file.path, options);
+    // Save the updated banner file
+    const newPath = req.file?.path;
 
-    // Update the banner object with the new image URL and public ID
-    banner.banner = result.secure_url;
-    banner.cloudinaryId = result.public_id;
+    if (!newPath) {
+      return res.status(400).json({ message: "No image uploaded" });
+    }
 
-    // Save the updated banner object to the database
+    // Update the banner location in MongoDB
+    banner.banner = newPath;
     await banner.save();
 
-    res.status(200).json({
-      status: "success",
-      banner,
-    });
+    res.status(200).json({ message: "Banner updated successfully", banner });
   } catch (error) {
-    res.status(500).json({
-      error,
-    });
+    console.error("Error updating banner:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

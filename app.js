@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const upload = require("./utils/multer");
 const applicationUpload = require("./utils/application");
 const videoUpload = require("./utils/multer-video");
+const uploadHero = require("./middlewares/file.uplaod");
 
 const app = express();
 
@@ -35,6 +36,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 app.use("/api/v1/blog", upload.single("imageUrl"), blogPostRoute);
 app.use(
@@ -42,33 +44,21 @@ app.use(
   applicationUpload.single("resumeUrl"),
   applicationRoute
 );
-app.use("/api/v1/home", upload.single("partner"), partnerRoute);
+app.use("/api/v1/home", partnerRoute);
 app.use("/api/v1/home", heroRoute);
 app.use("/api/v1/home", servicesRoute);
-app.use("/api/v1/about", upload.single("banner"), aboutBannerRoute);
+app.use("/api/v1/about", aboutBannerRoute);
 app.use("/api/v1/about", aboutValuesRoute);
 app.use("/api/v1/about", visionMissionRoute);
 app.use("/api/v1/home", homeWhyRoute);
 app.use("/api/v1/auth", registerRoute);
 app.use("/api/v1/auth", loginRoute);
-app.use("/api/v1/case-studies", upload.single("imageUrl"), caseStudies);
-app.use("/api/v1/home-video", videoUpload.single("videoUrl"), videoRoute);
-app.use(
-  "/api/v1/services/fabrication",
-  upload.single("imageUrl"),
-  fabricationRoute
-);
-app.use(
-  "/api/v1/services/installation",
-  upload.single("imageUrl"),
-  installationRoute
-);
-app.use(
-  "/api/v1/services/maintenance",
-  upload.single("imageUrl"),
-  maintenanceRoute
-);
-app.use("/api/v1/hero-image-one", upload.single("imageUrl"), heroImageOne);
+app.use("/api/v1/case-studies", caseStudies);
+app.use("/api/v1/home-video", videoRoute);
+app.use("/api/v1/services/fabrication", fabricationRoute);
+app.use("/api/v1/services/installation", installationRoute);
+app.use("/api/v1/services/maintenance", maintenanceRoute);
+app.use("/api/v1/hero-image-one", heroImageOne);
 app.use("/api/v1/hero-image-two", upload.single("imageUrl"), heroImageTwo);
 app.use("/api/v1/hero-image-three", upload.single("imageUrl"), heroImageThree);
 

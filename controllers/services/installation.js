@@ -1,18 +1,11 @@
 const Installation = require("../../models/services/installation-and-commission");
-const cloudinary = require("../../utils/cloudinary")
+// const cloudinary = require("../../utils/cloudinary")
+const fs = require("fs");
 
 exports.postInstallationImage = async (req, res) => {
   try {
-    const options = {
-      folder: "tranos/services",
-      resource_type: "auto",
-    };
-
-    const result = await cloudinary.uploader.upload(req.file.path, options);
-
     const newInstallation = new Installation({
-      installationImageUrl: result.secure_url,
-      cloudinaryId: result.public_id,
+      installationImageUrl: req.file.path,
     });
 
     await newInstallation.save();
@@ -57,21 +50,25 @@ exports.updateInstallation = async (req, res) => {
       });
     }
 
-    // Delete the old image from Cloudinary
-    await cloudinary.uploader.destroy(installation.cloudinaryId);
-
-    // Upload the updated banner image to Cloudinary
-    const options = {
-      folder: "tranos/services",
-      resource_type: "auto",
-    };
-    const result = await cloudinary.uploader.upload(req.file.path, options);
+    // Delete the old banner file from the file system
+    try {
+      for (const installationUrl of installation.installationImageUrl.split(
+        ","
+      )) {
+        await fs.promises.unlink(installationUrl);
+      }
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        // Ignore file not found error
+        console.error("Error deleting file:", err);
+        return res.status(500).json({ message: "Error deleting file" });
+      }
+    }
 
     const updatedInstallation = await Installation.findByIdAndUpdate(
       installationId,
       {
-        installationImageUrl: result.secure_url,
-        cloudinaryId: result.public_id,
+        installationImageUrl: req.file.path,
       },
       { new: true }
     );

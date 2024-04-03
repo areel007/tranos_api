@@ -1,18 +1,11 @@
 const Partner = require("../../models/home/partners");
-const cloudinary = require("../../utils/cloudinary");
+const fs = require("fs");
+// const cloudinary = require("../../utils/cloudinary");
 
 exports.addPartner = async (req, res) => {
   try {
-    const options = {
-      folder: "tranos/home",
-      resource_type: "auto",
-    };
-
-    const result = await cloudinary.uploader.upload(req.file.path, options);
-
     const newPartner = new Partner({
-      partner: result.secure_url,
-      cloudinaryId: result.public_id,
+      partner: req.file?.path,
     });
 
     await newPartner.save();
@@ -43,9 +36,8 @@ exports.getPartners = async (req, res) => {
 };
 
 exports.deletePartner = async (req, res) => {
+  const partnerId = req.params.id;
   try {
-    const partnerId = req.params.id; 
-
     const partner = await Partner.findById(partnerId);
 
     if (!partner) {
@@ -54,18 +46,22 @@ exports.deletePartner = async (req, res) => {
       });
     }
 
-    await cloudinary.uploader.destroy(partner.cloudinaryId);
+    // Delete the existing image file
+    fs.unlink(`${partner.partner}`, (err) => {
+      if (err && err.code !== "ENOENT") {
+        // Ignore file not found error
+        console.error("Error deleting file:", err);
+        return res.status(500).json({ message: "Error deleting file" });
+      }
+    });
 
+    // Delete the image URL in mongoDB
     await Partner.findByIdAndDelete(partnerId);
 
-    res.status(200).json({
-      status: "success",
-      message: "Partner deleted successfully",
-    });
+    res.status(200).json({ message: "Hero image deleted successfully" });
   } catch (error) {
     res.status(500).json({
       error,
     });
   }
 };
-

@@ -1,18 +1,11 @@
 const Fabrication = require("../../models/services/fabrication");
-const cloudinary = require("../../utils/cloudinary");
+// const cloudinary = require("../../utils/cloudinary");
+const fs = require("fs");
 
 exports.postFabrication = async (req, res) => {
   try {
-    const options = {
-      folder: "tranos/services",
-      resource_type: "auto",
-    };
-
-    const result = await cloudinary.uploader.upload(req.file.path, options);
-
     const newFabrication = new Fabrication({
-      fabricationImageUrl: result.secure_url,
-      cloudinaryId: result.public_id,
+      fabricationImageUrl: req.file.path,
     });
 
     await newFabrication.save();
@@ -26,8 +19,8 @@ exports.postFabrication = async (req, res) => {
 };
 
 exports.getFabrication = async (req, res) => {
+  const fabricationId = req.params.id;
   try {
-    const fabricationId = req.params.id;
     const fabrication = await Fabrication.findById(fabricationId);
 
     if (!fabrication) {
@@ -47,8 +40,8 @@ exports.getFabrication = async (req, res) => {
 };
 
 exports.updateFabrication = async (req, res) => {
+  const fabricationId = req.params.id;
   try {
-    const fabricationId = req.params.id;
     const fabrication = await Fabrication.findById(fabricationId);
 
     if (!fabrication) {
@@ -57,21 +50,23 @@ exports.updateFabrication = async (req, res) => {
       });
     }
 
-    // Delete the old image from Cloudinary
-    await cloudinary.uploader.destroy(fabrication.cloudinaryId);
-
-    // Upload the updated banner image to Cloudinary
-    const options = {
-      folder: "tranos/services",
-      resource_type: "auto",
-    };
-    const result = await cloudinary.uploader.upload(req.file.path, options);
+    // Delete the old banner file from the file system
+    try {
+      for (const fabricationUrl of fabrication.fabricationImageUrl.split(",")) {
+        await fs.promises.unlink(fabricationUrl);
+      }
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        // Ignore file not found error
+        console.error("Error deleting file:", err);
+        return res.status(500).json({ message: "Error deleting file" });
+      }
+    }
 
     const updatedFabrication = await Fabrication.findByIdAndUpdate(
       fabricationId,
       {
-        fabricationImageUrl: result.secure_url,
-        cloudinaryId: result.public_id,
+        fabricationImageUrl: req.file.path,
       },
       { new: true }
     );

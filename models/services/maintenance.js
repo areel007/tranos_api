@@ -4,9 +4,6 @@ const maintenanceSchema = new mongoose.Schema({
   maintenanceImageUrl: {
     type: String,
   },
-  cloudinaryId: {
-    type: String,
-  },
 });
 
 const Maintenance = mongoose.model("Maintenance", maintenanceSchema);

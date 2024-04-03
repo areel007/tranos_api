@@ -16,9 +16,6 @@ const caseStudiesSchema = new mongoose.Schema({
   imageUrl: {
     type: String,
   },
-  cloudinaryId: {
-    type: String,
-  },
 });
 
 const CaseStudy = mongoose.model("CaseStudy", caseStudiesSchema);
